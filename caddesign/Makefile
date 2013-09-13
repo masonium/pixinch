@@ -1,5 +1,5 @@
 EXE = caddesign
-OBJS = main.o
+OBJS = main.o strips.o extrude.o board.o
 
 LIBS = 
 INCLUDES = -I/home/mason/include
