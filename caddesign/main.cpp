@@ -42,5 +42,5 @@ int main(int argc, char ** args)
 {
   grid_strip(true, "bottom_strip.obj");
   grid_strip(false, "top_strip.obj");
-  //light_board("board.obj");
+  light_board("board.obj");
 }

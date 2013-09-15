@@ -15,7 +15,7 @@ struct quad
   int f[4];
 };
 
-
+/** All measurements are in mm. **/
 const double GRID_WIDTH = 31.25;
 const double SLOT_WIDTH = 2;
 const double SLOT_OVERHANG_WIDTH = 10;
@@ -42,3 +42,4 @@ void write_mesh( const std::string& filename, const vector<vec3>& points,
 
 
 void grid_strip(bool bottom, const std::string& filename);
+void light_board(const std::string& filename);
