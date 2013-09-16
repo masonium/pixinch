@@ -94,7 +94,8 @@ void light_board_outer_edge_faces(vector<quad>& quads)
   const int ovo = 8 * GRID_SIZE;
   const int eo = GRID_SIZE * 8 + 8;
   for (int i = 0; i < 8; ++i)
-    quads.push_back( quad{{ ovo + (i + 1) % 8, ovo + i, ovo + eo + i, ovo + eo + (i + 1) % 8 }} );
+    quads.push_back( quad{{ ovo + eo + (i + 1) % 8, ovo + (i + 1) % 8,
+                            ovo + i, ovo + eo + i }} );
 }
 
 /***
