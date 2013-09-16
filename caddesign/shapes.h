@@ -17,9 +17,9 @@ struct quad
 
 /** All measurements are in mm. **/
 const double GRID_WIDTH = 31.25;
-const double SLOT_WIDTH = 2;
-const double SLOT_OVERHANG_WIDTH = 10;
-const double SLOT_OVERHANG_DEPTH = 10;
+const double STRIP_DEPTH = 2;
+const double SLOT_OVERHANG_WIDTH = 20;
+const double SLOT_OVERHANG_DEPTH = 20;
 const double BRIDGE_DEPTH = 40;
 
 const double BOARD_DEPTH = 10;

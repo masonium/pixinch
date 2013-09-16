@@ -9,7 +9,7 @@ void grid_strip_slot_points(vector<vec3>& points)
 {
   double curr_x = GRID_WIDTH;
 
-  const double SHW = SLOT_WIDTH * 0.5;
+  const double SHW = STRIP_DEPTH * 0.5;
     
   for (int i = 0; i < GRID_SIZE-1; ++i)
   {
@@ -26,7 +26,7 @@ void grid_strip_slot_points_bottom(vector<vec3>& points, bool bottom)
 {
   double curr_x = 0.0;
 
-  const double SHW = SLOT_WIDTH * 0.5;
+  const double SHW = STRIP_DEPTH * 0.5;
     
   for (int i = 0; i < GRID_SIZE-1; ++i)
   {
@@ -133,7 +133,7 @@ void grid_strip(bool bottom, const std::string& filename)
     grid_strip_overhang_points_top( points );
 
   // extrude the existing points
-  extrude_points( points, SLOT_WIDTH );
+  extrude_points( points, STRIP_DEPTH );
   
   const int eo = points.size() >> 1; // extrusion_offset
   
