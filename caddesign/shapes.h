@@ -39,6 +39,7 @@ void extrude_faces( vector<quad>& quads, int eo);
 
 void write_mesh( const std::string& filename, const vector<vec3>& points,
                  const vector<quad>& quads );
+void write_svg( const std::string& filename, const vector<vec3>& points);
 
 
 void grid_strip(bool bottom, const std::string& filename);

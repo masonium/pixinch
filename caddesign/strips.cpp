@@ -1,5 +1,4 @@
 #include "shapes.h"
-
 #include <iostream>
 #include <cassert>
 using std::cout;
@@ -156,5 +155,6 @@ void grid_strip(bool bottom, const std::string& filename)
   for (int i = 0; i < eo; ++i)
     quads.push_back( quad{ {(i+1) % eo, i, i + eo, (i+1) % eo + eo }} );
 
-  write_mesh(filename, points, quads);
+  write_svg(filename, points);
+  //write_mesh(filename, points, quads);
 }
