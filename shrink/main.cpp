@@ -109,7 +109,6 @@ int main(int argc, char **Args)
   
   SDL_RenderClear(app_renderer);
   SDL_SetRenderDrawColor(app_renderer, 255, 0, 128, 0);
-  //SDL_RenderCopy(app_renderer, tex, NULL, NULL);
   
   SDL_Texture* tex = load_texture("/home/mason/51415.jpg");
   if (tex == NULL)
