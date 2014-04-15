@@ -95,27 +95,46 @@ SDL_Texture* load_texture(const char * filename)
   return sdl_tex;
 }
 
-int main(int argc, char **Args)
+void write_image(SDL_Texture* tex)
 {
+  if (tex == NULL)
+    return;
+
+  int w, h;
+  SDL_QueryTexture(tex, NULL, NULL, &w, &h);
+  
+  char* pixels;
+  int pixel_pitch;
+  SDL_LockTexture(tex, NULL, reinterpret_cast<void**>(&pixels), &pixel_pitch);
+
+  for (int y = 0; y < h; ++y) {
+    for (int x = 0; x < w; ++x) {
+    }
+  }      
+}
+
+int main(int argc, char **args)
+{
+  bool write_images = false;
+  if (argc > 1)
+  {
+    write_images = true;
+  }
+  
   if (setup_SDL(512, 512))
   {
     cerr << "could not load SDL" << endl;
     return 1;
   }
 
-  cout << "Loaded SDL" << endl;
+  cerr << "Loaded SDL" << endl;
 
   setup_devil();
   
   SDL_RenderClear(app_renderer);
-  SDL_SetRenderDrawColor(app_renderer, 255, 0, 128, 0);
+  SDL_SetRenderDrawColor(app_renderer, 63, 63, 63, 0);
   
-  SDL_Texture* tex = load_texture("/home/mason/51415.jpg");
-  if (tex == NULL)
-  {
-    cerr << "Could not load texture" << endl;
-    return 1;
-  }
+  SDL_Texture* tex = NULL;
 
   bool quit = false;
 
@@ -135,8 +154,15 @@ int main(int argc, char **Args)
           cerr << "Could not load texture" << endl;
         }
       }
-      if (e.type == SDL_KEYDOWN)
-        quit = true;
+      
+      if (e.type == SDL_KEYDOWN) {
+        if (e.key.keysym.sym == SDLK_ESCAPE) {
+            quit = true;
+        }
+        if (e.key.keysym.sym == SDLK_w && write_images) {
+          write_image(tex);
+        }
+      }
         
       if (e.type == SDL_QUIT)
         quit = true;
