@@ -3,6 +3,7 @@
 #include <iterator>
 #include <vector>
 #include <limits>
+#include <iostream>
 
 using namespace std;
 
@@ -11,11 +12,11 @@ ColorKey::ColorKey()
   yuv[0] = yuv[1] = yuv[2] = 0.0f;
 }
 
-ColorKey::ColorKey(char r_, char g_, char b_)
+ColorKey::ColorKey(uchar r_, uchar g_, uchar b_)
 {
-  yuv[0] = 0.299f * r_ + 0.587f * g_ + 0.114f * b_;
-  yuv[1] = -0.147f * r_ - 0.289f * g_ + 0.436 * b_;
-  yuv[2] = 0.615f * r_ - 0.515f * g_ - 0.100f * b_;
+  yuv[0] = 0.299f    * r_  + 0.587f      * g_  + 0.114f    * b_;
+  yuv[1] = -0.14713f * r_  + -0.28886f   * g_  + 0.436     * b_;
+  yuv[2] = 0.615f    * r_  + -0.51499f   * g_  + -0.10001f * b_;
 }
 
 bool ColorKey::operator <(const ColorKey& ck) const
@@ -31,6 +32,13 @@ float ColorKey::distance_sq(const ColorKey& ck) const
   return dy * dy + du * du + dv * dv;
 }
 
+void ColorKey::to_rgb(uchar& r, uchar& g, uchar& b) const
+{
+  r = uchar(1.0f * yuv[0] +  0.00000f * yuv[1]  +  1.13983f * yuv[2]);
+  g = uchar(1.0f * yuv[0] + -0.39465f * yuv[1]  + -0.58060f * yuv[2]);
+  b = uchar(1.0f * yuv[0] +  2.03211f * yuv[1]  +  0.00000f * yuv[2]);
+}
+
 ////////////////////////////////////////////////////////////////////////////////
 
 ColorKeyMean::ColorKeyMean() : num_samples(0)
@@ -43,7 +51,7 @@ void ColorKeyMean::update(ColorKey ck, size_t n)
 {
   for (size_t i = 0; i < 3; ++i)
     yuv_sum[i] += ck.yuv[i] * n;
-  num_samples += n
+  num_samples += n;
 }
 
 ColorKey ColorKeyMean::mean() const
@@ -57,14 +65,22 @@ ColorKey ColorKeyMean::mean() const
 }
 
 ////////////////////////////////////////////////////////////////////////////////
-
-
-ColorClusterer::ColorClusterer(int num_clusters_) : num_clusters(num_clusters_), has_initial_clusters(false), dirty(false)
+ColorClusterer::ColorClusterer(int num_clusters_) :
+  num_clusters(num_clusters_), has_initial_clusters(false), dirty(false)
 {
-
+  
 }
 
-void ColorClusterer::add_pixel(char r, char g, char b)
+void ColorClusterer::clear()
+{
+  has_initial_clusters = false;
+  dirty = false;
+  
+  color_map.clear();
+  cluster_means.clear();
+}
+
+void ColorClusterer::add_pixel(uchar r, uchar g, uchar b)
 {
   ColorKey rgb{r, g, b};
   auto x = color_map.find( rgb );
@@ -75,7 +91,8 @@ void ColorClusterer::add_pixel(char r, char g, char b)
   dirty = true;
 }
 
-void ColorClusterer::update_clusters()
+void ColorClusterer::update_clusters(int max_iterations,
+                                     bool force_reset)
 {
   if (!dirty)
     return;
@@ -86,12 +103,20 @@ void ColorClusterer::update_clusters()
     return;
   }
   
-  if (!has_initial_clusters)
+  if (!has_initial_clusters || force_reset)
     initial_clusters();
 
-  vector<ColorKey> old_clusters = cluster_means;
+  vector<ColorKey> old_clusters;
+
+  cerr << "Starting clustering with " << color_map.size() << " unique clusters." << endl;
+  
+  int num_iterations = 0;
+  float min_distance;
   do 
   {
+    old_clusters = cluster_means;
+    
+    min_distance = numeric_limits<float>::max();
     /* Assign the cluster indices based on the means. */
     for (auto& entry: color_map)
     {
@@ -100,6 +125,7 @@ void ColorClusterer::update_clusters()
       {
         ColorKey& ck = old_clusters[i];
         float ds = entry.first.distance_sq(ck);
+        min_distance = min(ds, min_distance);
         if ( entry.second.closest > ds )
         {
           entry.second.closest = ds;
@@ -117,8 +143,13 @@ void ColorClusterer::update_clusters()
 
     for (size_t i = 0; i < old_clusters.size(); ++i)
       cluster_means[i] = means[i].mean();
-    
-  } while (old_clusters != cluster_means);
+
+    num_iterations += 1;
+  } while (old_clusters != cluster_means &&
+           num_iterations < max_iterations);
+
+  cerr << "Clustering found after " << num_iterations << " iterations.\n";
+  cerr << "Minimum distance: " << min_distance << endl;
 }
 
 bool ColorClusterer::is_trivial()
@@ -136,13 +167,33 @@ void ColorClusterer::trivial_clusters()
     cluster_means.push_back(entry.first);
     entry.second.index = index++;
   }
+
+  cerr << "Used trivial cluster with " << index << " colors.\n";
 }
 
 ColorKey first_elem(const map<ColorKey, ColorEntry>::value_type & p)
 {
   return p.first;
 }
-  
+
+int ColorClusterer::get_index(uchar r, uchar g, uchar b) const
+{
+  auto it = color_map.find( ColorKey{r, g, b} );
+  if (it != color_map.end())
+    return it->second.index;
+  return -1;
+}
+
+int ColorClusterer::clusters() const
+{
+  return cluster_means.size();
+}
+
+ColorKey ColorClusterer::operator[](int index) const
+{
+  return cluster_means[index];
+}
+
 void ColorClusterer::initial_clusters()
 {
   vector<ColorKey> keys;
@@ -151,7 +202,5 @@ void ColorClusterer::initial_clusters()
   random_shuffle(keys.begin(), keys.end());
   
   for (size_t i = 0; i < num_clusters; ++i)
-  {
     cluster_means.push_back(keys[i]);
-  }
 }
