@@ -1,0 +1,4 @@
+: foreach *.cpp |> g++ -c %f -o %o -g -std=c++11 -I/home/mason/include `sdl2-config --cflags` -Wall |> %B.o
+: foreach *.c |> g++ -c %f -o %o -g -std=c++11 -I/home/mason/include `sdl2-config --cflags` -Wall |> %B.o
+: *.o |> g++ -o %o %f -g -lIL -lILU `sdl2-config --libs` -std=c++11 -Wall |> main
+
