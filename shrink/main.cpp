@@ -196,6 +196,24 @@ void write_and_ack(int fd, uint8_t b)
   serialport_read_until(fd, buffer, '\n', 255, 1000);
 }
 
+void send_color(uint8_t r, uint8_t g, uint8_t b)
+{
+  int fd;
+  if ((fd = serialport_init("/dev/ttyACM0", 9600)) < 0)
+  {
+    cerr << "Could not open arduino port." << endl;
+    exit(1);
+  }
+  
+  
+  cerr << "Opening. Waiting 1 seconds." << endl;
+  sleep(1);
+  write_and_ack(fd, 1);
+  write_and_ack(fd, r);
+  write_and_ack(fd, g);
+  write_and_ack(fd, b);
+}
+
 void send_image(ILuint image, const ColorClusterer& clusterer)
 {
   int fd;
@@ -207,6 +225,7 @@ void send_image(ILuint image, const ColorClusterer& clusterer)
   sleep(1);
 
   uchar num_clusters = clusterer.clusters();
+  write_and_ack(fd, 0);
   write_and_ack(fd, num_clusters);
   
   for (int i = 0; i < num_clusters; ++i)
@@ -285,6 +304,13 @@ int main(int argc, char **args)
 
     return 0;
     
+  }
+
+  if (command == "send_color")
+  {
+    assert(argc >= 5);
+    send_color( atoi(args[2]), atoi(args[3]), atoi(args[4]));
+    return 0;
   }
   
   if (setup_SDL(512, 512))
